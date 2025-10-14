@@ -13,15 +13,7 @@ const bot = new Telegraf(token);
 
 bot.start((ctx) => ctx.reply(start_script(ctx.from.first_name)));
 bot.help((ctx) => ctx.reply("Type something"));
-bot.command("menu", (ctx) => ctx.reply(
-    "Choose action: ",
-    Markup.keyboard([
-        ['Send passport', 'Send vehicle identification document']
-    ])
-    .resize()
-));
-bot.hears('Send passport', (ctx) => ctx.reply("You've sent a passport"));
-bot.hears('Send vehicle identification document', (ctx) => ctx.reply("You've sent a vehicle identification document"));
+bot.hears('Proceed', (ctx) => ctx.reply("Please upload your passport"));
 bot.on("text", (ctx) => ctx.reply(`Your text is: ${ctx.message.text}`));
 bot.on("document", (ctx) => ctx.reply("Document received.") )
 bot
