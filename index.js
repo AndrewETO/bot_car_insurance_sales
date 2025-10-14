@@ -1,4 +1,4 @@
-const { Telegraf } = require("telegraf");
+const { Telegraf, Markup } = require("telegraf");
 const express = require("express");
 const { start_script } = require("./bot_scripts");
 require("dotenv/config");
@@ -13,7 +13,15 @@ const bot = new Telegraf(token);
 
 bot.start((ctx) => ctx.reply(start_script(ctx.from.first_name)));
 bot.help((ctx) => ctx.reply("Type something"));
-bot.command("olechka", (ctx) => ctx.reply("Моє коханнячко ♥"));
+bot.command("menu", (ctx) => ctx.reply(
+    "Choose action: ",
+    Markup.keyboard([
+        ['Send passport', 'Send vehicle identification document']
+    ])
+    .resize()
+));
+bot.hears('Send passport', (ctx) => ctx.reply("You've sent a passport"));
+bot.hears('Send vehicle identification document', (ctx) => ctx.reply("You've sent a vehicle identification document"));
 bot.on("text", (ctx) => ctx.reply(`Ты написал: ${ctx.message.text}`));
 bot
   .launch()
