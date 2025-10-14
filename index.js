@@ -13,8 +13,8 @@ bot.start((ctx) => ctx.reply(`Hi, ${ctx.from.first_name || 'friend'}!`));
 bot.help((ctx) => ctx.reply('Type something'));
 bot.on('text', (ctx) => ctx.reply(`You wrote: ${ctx.message.text}`));
 
-bot.lounch()
-    .then(() => console.log('Bot started (pooling'))
+bot.launch()
+    .then(() => console.log('Bot started (pooling)'))
     .catch(err => {
         console.error('Failed to lounch bot: ', err);
         process.exit(1);
