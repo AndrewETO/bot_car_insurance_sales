@@ -1,24 +1,25 @@
 const { Telegraf } = require("telegraf");
-require("dotenv/config")
+require("dotenv/config");
 
 const token = process.env.BOT_TOKEN;
-if(!token) {
-    console.error('ERROR: BOT_TOKEN is not set');
-    process.exit(1);
+if (!token) {
+  console.error("ERROR: BOT_TOKEN is not set");
+  process.exit(1);
 }
 
 const bot = new Telegraf(token);
 
-bot.start((ctx) => ctx.reply(`Hi, ${ctx.from.first_name || 'friend'}!`));
-bot.help((ctx) => ctx.reply('Type something'));
-bot.on('text', (ctx) => ctx.reply(`You wrote: ${ctx.message.text}`));
+bot.start((ctx) => ctx.reply(`Hi, ${ctx.from.first_name || "friend"}!`));
+bot.help((ctx) => ctx.reply("Type something"));
+bot.on('text', ctx => ctx.reply(`Ты написал: ${ctx.message.text}`));
 
-bot.launch()
-    .then(() => console.log('Bot started (pooling)'))
-    .catch(err => {
-        console.error('Failed to lounch bot: ', err);
-        process.exit(1);
-    });
+bot
+  .launch()
+  .then(() => console.log("Bot started (pooling)"))
+  .catch((err) => {
+    console.error("Failed to lounch bot: ", err);
+    process.exit(1);
+  });
 
-    process.once('SIGINT', () => bot.stop('SIGINT'));
-    process,once('SIGTERM', () => bot.stop('SIGTERM'));
+process.once("SIGINT", () => bot.stop("SIGINT"));
+process.once("SIGTERM", () => bot.stop("SIGTERM"));
