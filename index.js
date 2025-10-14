@@ -13,9 +13,8 @@ const bot = new Telegraf(token);
 
 bot.start((ctx) => ctx.reply(start_script(ctx.from.first_name)));
 bot.help((ctx) => ctx.reply("Type something"));
+bot.command("olechka", (ctx) => ctx.reply("Моє коханнячко ♥"));
 bot.on("text", (ctx) => ctx.reply(`Ты написал: ${ctx.message.text}`));
-bot.command("olechka", (ctx) => ctx.reply("Моє коханнячко ♥"))
-
 bot
   .launch()
   .then(() => console.log("Bot started (pooling)"))
