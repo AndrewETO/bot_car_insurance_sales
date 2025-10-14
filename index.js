@@ -22,7 +22,8 @@ bot.command("menu", (ctx) => ctx.reply(
 ));
 bot.hears('Send passport', (ctx) => ctx.reply("You've sent a passport"));
 bot.hears('Send vehicle identification document', (ctx) => ctx.reply("You've sent a vehicle identification document"));
-bot.on("text", (ctx) => ctx.reply(`Ты написал: ${ctx.message.text}`));
+bot.on("text", (ctx) => ctx.reply(`Your text is: ${ctx.message.text}`));
+bot.on("document", (ctx) => ctx.reply("Document received.") )
 bot
   .launch()
   .then(() => console.log("Bot started (pooling)"))
