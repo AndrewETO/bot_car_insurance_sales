@@ -11,7 +11,12 @@ if (!token) {
 
 const bot = new Telegraf(token);
 
-bot.start((ctx) => ctx.reply(start_script(ctx.from.first_name)));
+bot.start((ctx) => ctx.reply(start_script(ctx.from.first_name), Markup.inlineKeyboard([
+    Markup.button.callback('👍 Да', 'like_yes'),
+    Markup.button.callback('👎 Нет', 'like_no')
+  ])));
+bot.action('like_yes', ctx => ctx.reply('Спасибо ❤️'));
+bot.action('like_no', ctx => ctx.reply('Жаль 😢'));
 bot.help((ctx) => ctx.reply("Type something"));
 bot.hears('Proceed', (ctx) => ctx.reply("Please upload your passport"));
 bot.on("text", (ctx) => ctx.reply(`Your text is: ${ctx.message.text}`));
