@@ -1,6 +1,7 @@
 const { Telegraf, Markup } = require("telegraf");
 const express = require("express");
-const { start_script } = require("./bot_scripts");
+const { start_script, handleDocument } = require("./bot_scripts");
+const mindee = require('mindee');
 require("dotenv/config");
 
 const token = process.env.BOT_TOKEN;
@@ -17,9 +18,7 @@ bot.start((ctx) => ctx.reply(start_script(ctx.from.first_name), Markup.inlineKey
   ])));
 bot.action('like_yes', ctx => ctx.reply('Please upload your passport'));
 bot.action('like_no', ctx => ctx.reply('See you soon, good luck!'));
-bot.help((ctx) => ctx.reply("Type something"));
-bot.on("text", (ctx) => ctx.reply(`Your text is: ${ctx.message.text}`));
-bot.on("document", (ctx) => ctx.reply("Document received.") )
+bot.on("document", (ctx) => handleDocument(ctx, token));
 bot
   .launch()
   .then(() => console.log("Bot started (pooling)"))
