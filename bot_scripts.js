@@ -45,26 +45,21 @@ async function handleDocument(ctx, token) {
 
     await ctx.reply("📄 Документ получен. Распознаю данные...");
 
-    // 4️⃣ Отправляем файл в Mindee (паспортная модель)
+    // 4️⃣ Универсальная OCR-модель (распознает всё)
     const apiResponse = await mindeeClient
       .docFromPath(filePath)
-      .parse(mindee.product.PassportV1);
+      .parse(mindee.product.DocumentV1);
 
-    // 5️⃣ Извлекаем нужные данные
-    const prediction = apiResponse.document.inference.prediction;
-    const givenNames = prediction.given_names?.join(" ") || "не найдено";
-    const surnames = prediction.surnames?.join(" ") || "не найдено";
-    const documentNumber = prediction.document_number || "не найден";
+    // 5️⃣ Формируем читаемый результат
+    const resultText = JSON.stringify(apiResponse.document, null, 2);
 
-    // 6️⃣ Отправляем ответ пользователю
-    await ctx.reply(
-      `🧾 Результаты распознавания:\n` +
-        `👤 Имя: ${givenNames}\n` +
-        `🧍‍♂️ Фамилия: ${surnames}\n` +
-        `#️⃣ Номер документа: ${documentNumber}`
-    );
+    // Mindee иногда возвращает слишком много текста, поэтому обрежем если больше 4000 символов (ограничение Telegram)
+    const chunks = resultText.match(/.{1,4000}/gs);
+    for (const chunk of chunks) {
+      await ctx.reply("📋 Распознанные данные:\n" + chunk);
+    }
 
-    // 7️⃣ Удаляем временный файл
+    // 6️⃣ Удаляем временный файл
     fs.unlinkSync(filePath);
   } catch (err) {
     console.error("❌ Ошибка при обработке документа:", err);
