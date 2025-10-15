@@ -12,15 +12,11 @@ A'll be happy to assist you with car insurance purchasing!
 Would you like to proceed further?`;
 }
 
-/**
- * Обработка документа, отправленного пользователем.
- * Сохраняет файл, отправляет в Mindee OCR и возвращает распознанный текст.
- */
 async function handleDocument(ctx, token) {
   try {
     const file = ctx.message.document;
 
-    // 1️⃣ Проверка формата
+    // 1️⃣ Проверяем формат
     const allowedTypes = ["application/pdf", "image/jpeg", "image/png"];
     if (!allowedTypes.includes(file.mime_type)) {
       return ctx.reply("⚠️ Пожалуйста, отправь PDF, JPG или PNG документ.");
@@ -31,7 +27,7 @@ async function handleDocument(ctx, token) {
     const fileUrl = `https://api.telegram.org/file/bot${token}/${fileData.file_path}`;
     const fileName = file.file_name || "document.pdf";
 
-    // 3️⃣ Скачиваем документ
+    // 3️⃣ Скачиваем
     const tempDir = path.join(__dirname, "..", "temp");
     fs.mkdirSync(tempDir, { recursive: true });
     const filePath = path.join(tempDir, fileName);
@@ -45,19 +41,17 @@ async function handleDocument(ctx, token) {
 
     await ctx.reply("📥 Документ получен. Распознаю...");
 
-    // 4️⃣ Отправляем в Mindee (универсальное OCR)
+    // 4️⃣ Универсальное распознавание с ReceiptV5
     const inputDoc = mindeeClient.docFromPath(filePath);
+    const apiResponse = await mindeeClient.parse(mindee.product.ReceiptV5, inputDoc);
 
-    // ⚙️ Универсальный OCR (распознает текст без конкретной модели)
-    const apiResponse = await mindeeClient.parse(inputDoc);
-
-    // 5️⃣ Формируем ответ
+    // 5️⃣ Извлекаем текст
     const result = apiResponse?.document?.inference?.pages
       ?.map((p) => p?.content)
       ?.join("\n\n");
 
     if (result && result.trim().length > 0) {
-      const chunks = result.match(/.{1,4000}/gs); // ограничение Telegram
+      const chunks = result.match(/.{1,4000}/gs);
       for (const chunk of chunks) {
         await ctx.reply("📋 Распознанный текст:\n" + chunk);
       }
@@ -65,7 +59,6 @@ async function handleDocument(ctx, token) {
       await ctx.reply("🤔 Не удалось распознать текст. Попробуй фото получше или другой формат.");
     }
 
-    // 6️⃣ Удаляем временный файл
     fs.unlinkSync(filePath);
   } catch (err) {
     console.error("❌ Ошибка при обработке документа:", err.message);
