@@ -2,7 +2,8 @@ const fs = require("fs");
 const path = require("path");
 const axios = require("axios");
 const mindee = require("mindee");
-require("dotenv/config");
+require("dotenv").config();
+console.log("Loaded Mindee key:", process.env.MINDEE_API_KEY ? "✅" : "❌");
 
 const mindeeClient = new mindee.Client({ apiKey: process.env.MINDEE_API_KEY });
 
