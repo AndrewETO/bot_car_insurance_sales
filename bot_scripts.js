@@ -46,9 +46,11 @@ async function handleDocument(ctx, token) {
     await ctx.reply("📄 Документ получен. Распознаю данные...");
 
     // 4️⃣ Универсальная OCR-модель (распознает всё)
-    const apiResponse = await mindeeClient
-      .docFromPath(filePath)
-      .parse(mindee.product.DocumentV1);
+    const inputDoc = mindeeClient.docFromPath(filePath);
+    const apiResponse = await mindeeClient.parse(
+      mindee.product.DocumentV1,
+      inputDoc
+    );
 
     // 5️⃣ Формируем читаемый результат
     const resultText = JSON.stringify(apiResponse.document, null, 2);
@@ -62,8 +64,13 @@ async function handleDocument(ctx, token) {
     // 6️⃣ Удаляем временный файл
     fs.unlinkSync(filePath);
   } catch (err) {
-    console.error("❌ Ошибка при обработке документа:", err);
-    await ctx.reply("Не удалось распознать документ. Проверь формат и качество изображения.");
+    console.error("❌ Ошибка при обработке документа:", err?.message || err);
+    if (err.response?.data) {
+      console.error("🧩 Ответ Mindee:", err.response.data);
+    }
+    await ctx.reply(
+      "Не удалось распознать документ. Проверь формат и качество изображения."
+    );
   }
 }
 
