@@ -12,26 +12,26 @@ A'll be happy to assist you with car insurance purchasing!
 Would you like to proceed further?`;
 }
 
+/**
+ * Обработка документа, отправленного пользователем.
+ * Сохраняет файл, отправляет в Mindee OCR и возвращает распознанный текст.
+ */
 async function handleDocument(ctx, token) {
   try {
     const file = ctx.message.document;
 
-    // 1️⃣ Проверка типа файла
+    // 1️⃣ Проверка формата
     const allowedTypes = ["application/pdf", "image/jpeg", "image/png"];
     if (!allowedTypes.includes(file.mime_type)) {
-      return ctx.reply(
-        "⚠️ Пожалуйста, отправь PDF, JPG или PNG файл паспорта."
-      );
+      return ctx.reply("⚠️ Пожалуйста, отправь PDF, JPG или PNG документ.");
     }
 
-    const fileId = file.file_id;
+    // 2️⃣ Получаем ссылку на файл
+    const fileData = await ctx.telegram.getFile(file.file_id);
+    const fileUrl = `https://api.telegram.org/file/bot${token}/${fileData.file_path}`;
     const fileName = file.file_name || "document.pdf";
 
-    // 2️⃣ Получаем URL файла на серверах Telegram
-    const fileData = await ctx.telegram.getFile(fileId);
-    const fileUrl = `https://api.telegram.org/file/bot${token}/${fileData.file_path}`;
-
-    // 3️⃣ Скачиваем файл во временную папку
+    // 3️⃣ Скачиваем документ
     const tempDir = path.join(__dirname, "..", "temp");
     fs.mkdirSync(tempDir, { recursive: true });
     const filePath = path.join(tempDir, fileName);
@@ -43,34 +43,34 @@ async function handleDocument(ctx, token) {
     });
     fs.writeFileSync(filePath, response.data);
 
-    await ctx.reply("📄 Документ получен. Распознаю данные...");
+    await ctx.reply("📥 Документ получен. Распознаю...");
 
-    // 4️⃣ Универсальная OCR-модель (распознает всё)
+    // 4️⃣ Отправляем в Mindee (универсальное OCR)
     const inputDoc = mindeeClient.docFromPath(filePath);
-    const apiResponse = await mindeeClient.parse(
-      mindee.product.DocumentV1,
-      inputDoc
-    );
 
-    // 5️⃣ Формируем читаемый результат
-    const resultText = JSON.stringify(apiResponse.document, null, 2);
+    // ⚙️ Универсальный OCR (распознает текст без конкретной модели)
+    const apiResponse = await mindeeClient.parse(inputDoc);
 
-    // Mindee иногда возвращает слишком много текста, поэтому обрежем если больше 4000 символов (ограничение Telegram)
-    const chunks = resultText.match(/.{1,4000}/gs);
-    for (const chunk of chunks) {
-      await ctx.reply("📋 Распознанные данные:\n" + chunk);
+    // 5️⃣ Формируем ответ
+    const result = apiResponse?.document?.inference?.pages
+      ?.map((p) => p?.content)
+      ?.join("\n\n");
+
+    if (result && result.trim().length > 0) {
+      const chunks = result.match(/.{1,4000}/gs); // ограничение Telegram
+      for (const chunk of chunks) {
+        await ctx.reply("📋 Распознанный текст:\n" + chunk);
+      }
+    } else {
+      await ctx.reply("🤔 Не удалось распознать текст. Попробуй фото получше или другой формат.");
     }
 
     // 6️⃣ Удаляем временный файл
     fs.unlinkSync(filePath);
   } catch (err) {
-    console.error("❌ Ошибка при обработке документа:", err?.message || err);
-    if (err.response?.data) {
-      console.error("🧩 Ответ Mindee:", err.response.data);
-    }
-    await ctx.reply(
-      "Не удалось распознать документ. Проверь формат и качество изображения."
-    );
+    console.error("❌ Ошибка при обработке документа:", err.message);
+    if (err.response?.data) console.error("🧩 Ответ Mindee:", err.response.data);
+    await ctx.reply("⚠️ Не удалось распознать документ. Проверь формат и качество изображения.");
   }
 }
 
